@@ -14,6 +14,12 @@ SPLIT="${SPLIT:-train}"
 SYN_ROOT="${SYN_ROOT:-/media/SSD1/XCX/exp_2/synthetic_imagenet}"
 SOURCE_DIR="${SOURCE_DIR:-${SYN_ROOT}/uwdf/source/${SPLIT}}"
 REFERENCE_DIR="${REFERENCE_DIR:-/media/HDD1/XCX/exp_2/UWNR_ref_underwater/lnrud_like_ref/qingxi}"
+MODEL_ID="${MODEL_ID:-stabilityai/stable-diffusion-xl-base-1.0}"
+IP_ADAPTER_REPO="${IP_ADAPTER_REPO:-h94/IP-Adapter}"
+IP_ADAPTER_SUBFOLDER="${IP_ADAPTER_SUBFOLDER:-sdxl_models}"
+IP_ADAPTER_WEIGHT="${IP_ADAPTER_WEIGHT:-ip-adapter_sdxl.bin}"
+HEIGHT="${HEIGHT:-768}"
+WIDTH="${WIDTH:-768}"
 OUT_DIR="${OUT_DIR:-/media/SSD1/XCX/exp_2/synthesis_work/uwdf_ipadapter/${SPLIT}}"
 GPU="${GPU:-2}"
 LIMIT="${LIMIT:-0}"
@@ -37,6 +43,12 @@ if [[ "${SAVE_COMPARISON}" == "1" ]]; then
 fi
 
 python scripts/ipadapter_img2img_underwater.py \
+  --model-id "${MODEL_ID}" \
+  --ip-adapter-repo "${IP_ADAPTER_REPO}" \
+  --ip-adapter-subfolder "${IP_ADAPTER_SUBFOLDER}" \
+  --ip-adapter-weight "${IP_ADAPTER_WEIGHT}" \
+  --height "${HEIGHT}" \
+  --width "${WIDTH}" \
   --source-dir "${SOURCE_DIR}" \
   --reference-dir "${REFERENCE_DIR}" \
   --out-dir "${OUT_DIR}" \
@@ -50,3 +62,4 @@ python scripts/ipadapter_img2img_underwater.py \
   --ip-adapter-scale "${IP_ADAPTER_SCALE}" \
   --seed "${SEED}" \
   "${comparison_args[@]}"
+

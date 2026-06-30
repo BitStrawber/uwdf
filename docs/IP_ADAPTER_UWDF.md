@@ -76,6 +76,7 @@ A useful first grid is:
 STRENGTH: 0.25, 0.35, 0.45
 IP_ADAPTER_SCALE: 0.25, 0.45, 0.65
 GUIDANCE_SCALE: 5.0
+HEIGHT/WIDTH: 768
 ```
 
 If reference objects leak into generated images, lower `IP_ADAPTER_SCALE` and
@@ -83,13 +84,15 @@ add those objects to `NEGATIVE_PROMPT`.
 
 ## Weights
 
-The script defaults to:
+The script now defaults to the SDXL route:
 
 ```text
-Base model:      runwayml/stable-diffusion-v1-5
+Base model:      stabilityai/stable-diffusion-xl-base-1.0
 IP-Adapter repo: h94/IP-Adapter
-Weight:          models/ip-adapter_sd15.bin
+Weight:          sdxl_models/ip-adapter_sdxl.bin
+Resolution:      768x768
 ```
 
 The first run downloads these through Hugging Face into `HF_HOME`, defaulting to
 `/media/SSD1/huggingface`.
+

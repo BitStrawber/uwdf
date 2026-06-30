@@ -16,7 +16,7 @@ from typing import Iterable, List, Sequence
 import torch
 from PIL import Image, ImageOps, ImageDraw
 from tqdm import tqdm
-from diffusers import DDIMScheduler, StableDiffusionImg2ImgPipeline
+from diffusers import AutoPipelineForImage2Image, DDIMScheduler
 
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".bmp", ".webp", ".JPEG"}
 LANCZOS = getattr(getattr(Image, "Resampling", Image), "LANCZOS")
@@ -31,10 +31,10 @@ def parse_args() -> argparse.Namespace:
                         help="Underwater reference image directory. Files are searched recursively.")
     parser.add_argument("--out-dir", required=True,
                         help="Output root. Generated images preserve source relative class folders by default.")
-    parser.add_argument("--model-id", default="runwayml/stable-diffusion-v1-5")
+    parser.add_argument("--model-id", default="stabilityai/stable-diffusion-xl-base-1.0")
     parser.add_argument("--ip-adapter-repo", default="h94/IP-Adapter")
-    parser.add_argument("--ip-adapter-subfolder", default="models")
-    parser.add_argument("--ip-adapter-weight", default="ip-adapter_sd15.bin")
+    parser.add_argument("--ip-adapter-subfolder", default="sdxl_models")
+    parser.add_argument("--ip-adapter-weight", default="ip-adapter_sdxl.bin")
     parser.add_argument("--prompt", default="a realistic underwater photograph")
     parser.add_argument("--negative-prompt", default=(
         "cartoon, painting, illustration, deformed object, extra objects, "
@@ -44,8 +44,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--offset", type=int, default=0,
                         help="Skip the first N source images after sorting.")
     parser.add_argument("--seed", type=int, default=2026)
-    parser.add_argument("--height", type=int, default=512)
-    parser.add_argument("--width", type=int, default=512)
+    parser.add_argument("--height", type=int, default=768)
+    parser.add_argument("--width", type=int, default=768)
     parser.add_argument("--steps", type=int, default=20)
     parser.add_argument("--strength", type=float, default=0.35,
                         help="Img2img denoising strength. Higher values change source content more.")
@@ -166,11 +166,14 @@ def main() -> None:
     print(f"ip_adapter_scale:  {args.ip_adapter_scale}", flush=True)
     print("=========================================", flush=True)
 
-    pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
-        args.model_id,
-        torch_dtype=dtype,
-        safety_checker=None if args.disable_safety_checker else None,
-    )
+    load_kwargs = {"torch_dtype": dtype}
+    if args.disable_safety_checker:
+        load_kwargs["safety_checker"] = None
+    try:
+        pipe = AutoPipelineForImage2Image.from_pretrained(args.model_id, **load_kwargs)
+    except TypeError:
+        load_kwargs.pop("safety_checker", None)
+        pipe = AutoPipelineForImage2Image.from_pretrained(args.model_id, **load_kwargs)
     pipe.scheduler = DDIMScheduler.from_config(pipe.scheduler.config)
     pipe.load_ip_adapter(
         args.ip_adapter_repo,
@@ -256,5 +259,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 
 
